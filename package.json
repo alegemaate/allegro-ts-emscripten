@@ -1,0 +1,24 @@
+{
+  "name": "allegro-ts-emscripten",
+  "description": "Allegro 4 native code brought to the browser",
+  "version": "1.0.0",
+  "repository": "https://github.com/alegemaate/allegro-ts-emscripten",
+  "author": "Allan Legemaate <alegemaate@gmail.com>",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "lint": "eslint .",
+    "build": "tsc"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^4.15.0",
+    "@typescript-eslint/parser": "^4.15.0",
+    "eslint": "^7.19.0",
+    "eslint-config-prettier": "^8.1.0",
+    "prettier": "^2.2.1",
+    "typescript": "^4.1.5"
+  },
+  "dependencies": {
+    "allegro-ts": "next"
+  }
+}

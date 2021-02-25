@@ -1,0 +1,7 @@
+node_modules/
+MAKEFILE
+allegro-library.js
+cmake_install.cmake
+build/
+CMakeFiles/
+CMakeCache.txt
