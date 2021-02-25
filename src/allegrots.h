@@ -97,7 +97,7 @@ extern int MAKE_VERSION(int a, int b, int c);
 extern void _allegro_message(const char* str);
 
 // Native code needed
-void allegro_message(const char* str, ...) {
+inline void allegro_message(const char* str, ...) {
   char buffer[256];
   va_list args;
   va_start(args, str);
@@ -175,7 +175,7 @@ const char KEY_A = 0x41, KEY_B = 0x42, KEY_C = 0x43, KEY_D = 0x44, KEY_E = 0x45,
            KEY_ALT = 0x12, KEY_ALTGR = 0x12, KEY_LWIN = 0x5b, KEY_RWIN = 0x5c,
            KEY_MENU = 0x5d, KEY_SCRLOCK = 0x9d, KEY_NUMLOCK = 0x90,
            KEY_CAPSLOCK = 0x14;
-extern int* key(void);
+extern char* key(void);
 #define key key()
 
 // 1.7.8
@@ -317,6 +317,11 @@ extern void set_palette(PALETTE pal);
 
 // 1.13.3
 extern int makecol(int r, int g, int b);
+extern int makecol8(int r, int g, int b);
+extern int makecol15(int r, int g, int b);
+extern int makecol16(int r, int g, int b);
+extern int makecol24(int r, int g, int b);
+extern int makecol32(int r, int g, int b);
 
 // 1.13.4
 extern int makecol_depth(int color_depth, int r, int g, int b);
@@ -528,14 +533,14 @@ extern void _textprintf_ex(BITMAP* bmp,
                            const char* s);
 
 // Native code needed
-void textprintf_ex(BITMAP* bmp,
-                   FONT* f,
-                   int x,
-                   int y,
-                   int color,
-                   int bg,
-                   const char* s,
-                   ...) {
+inline void textprintf_ex(BITMAP* bmp,
+                          FONT* f,
+                          int x,
+                          int y,
+                          int color,
+                          int bg,
+                          const char* s,
+                          ...) {
   char buffer[256];
   va_list args;
   va_start(args, s);
@@ -554,14 +559,14 @@ extern void _textprintf_centre_ex(BITMAP* bmp,
                                   const char* s);
 
 // Native code needed
-void textprintf_centre_ex(BITMAP* bmp,
-                          FONT* f,
-                          int x,
-                          int y,
-                          int color,
-                          int bg,
-                          const char* s,
-                          ...) {
+inline void textprintf_centre_ex(BITMAP* bmp,
+                                 FONT* f,
+                                 int x,
+                                 int y,
+                                 int color,
+                                 int bg,
+                                 const char* s,
+                                 ...) {
   char buffer[256];
   va_list args;
   va_start(args, s);
@@ -580,14 +585,14 @@ extern void _textprintf_right_ex(BITMAP* bmp,
                                  const char* s);
 
 // Native code needed
-void textprintf_right_ex(BITMAP* bmp,
-                         FONT* f,
-                         int x,
-                         int y,
-                         int color,
-                         int bg,
-                         const char* s,
-                         ...) {
+inline void textprintf_right_ex(BITMAP* bmp,
+                                FONT* f,
+                                int x,
+                                int y,
+                                int color,
+                                int bg,
+                                const char* s,
+                                ...) {
   char buffer[256];
   va_list args;
   va_start(args, s);
@@ -606,14 +611,14 @@ extern void _textprintf_justify_ex(BITMAP* bmp,
                                    const char* s);
 
 // Native code needed
-void textprintf_justify_ex(BITMAP* bmp,
-                           FONT* f,
-                           int x,
-                           int y,
-                           int color,
-                           int bg,
-                           const char* s,
-                           ...) {
+inline void textprintf_justify_ex(BITMAP* bmp,
+                                  FONT* f,
+                                  int x,
+                                  int y,
+                                  int color,
+                                  int bg,
+                                  const char* s,
+                                  ...) {
   char buffer[256];
   va_list args;
   va_start(args, s);
