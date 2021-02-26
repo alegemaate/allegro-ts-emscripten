@@ -4,7 +4,7 @@
 
 ---
 
-## [GitHub](https://github.com/alegemaate/allegrots) - [API](https://alegemaate.com/allegrots/)
+## [GitHub](https://github.com/alegemaate/allegro-ts) - [API](https://alegemaate.com/allegro-ts/)
 
 ### What is allegro.ts?
 

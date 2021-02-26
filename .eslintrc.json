@@ -1,11 +1,7 @@
 {
   "parser": "@typescript-eslint/parser",
   "plugins": ["@typescript-eslint"],
-  "extends": [
-    "eslint:recommended",
-    "plugin:@typescript-eslint/recommended",
-    "prettier"
-  ],
+  "extends": ["eslint:all", "plugin:@typescript-eslint/all", "prettier"],
   "parserOptions": {
     "ecmaVersion": 2018,
     "sourceType": "module",
@@ -15,7 +11,21 @@
     "es6": true
   },
   "rules": {
-    "@typescript-eslint/no-explicit-any": 0,
-    "@typescript-eslint/no-unused-vars": 0
+    "camelcase": 0,
+    "func-names": 0,
+    "object-shorthand": 0,
+    "id-length": 0,
+    "sort-keys": 0,
+    "max-params": 0,
+    "one-var": 0,
+    "no-underscore-dangle": 0,
+    "new-cap": 0,
+    "no-bitwise": 0,
+    "max-lines": 0,
+
+    "@typescript-eslint/no-unused-vars": 0,
+    "@typescript-eslint/naming-convention": 0,
+    "@typescript-eslint/prefer-readonly-parameter-types": 0,
+    "@typescript-eslint/no-magic-numbers": 0
   }
 }

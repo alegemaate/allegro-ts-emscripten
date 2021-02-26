@@ -1,7 +1,7 @@
-import lallegts from "allegro-ts";
+import lallegts, { BITMAP } from "allegro-ts";
 
 // Memory declarations
-declare const HEAP32: any[];
+declare const HEAP32: number[];
 declare function _malloc(size: number): number;
 declare function _free(ptr: number): void;
 declare function stackSave(): number;
@@ -13,13 +13,15 @@ declare function getValue(addr: number, type: "i32"): number;
 // Converters
 declare function UTF8ToString(ptr: number): string;
 declare const Asyncify: {
-  handleAsync: (fun: () => Promise<any>) => Promise<any>;
+  handleAsync: <T>(fun: () => Promise<T>) => T;
 };
 
 // Library manager
-declare function autoAddDeps(param: any, strId: string): void;
-declare function mergeInto(lib1: any, lib2: any): void;
-declare const LibraryManager: any;
+declare function autoAddDeps(param: typeof AllegroJS, strId: string): void;
+declare function mergeInto(lib1: unknown, lib2: typeof AllegroJS): void;
+declare const LibraryManager: {
+  library: unknown;
+};
 
 // This
 declare const ALLEG: {
@@ -30,7 +32,7 @@ declare const ALLEG: {
   samples: lallegts.SAMPLE[];
   fonts: lallegts.FONT[];
   screen: lallegts.BITMAP;
-  writeArray32ToMemory: (array: (number | boolean)[], buffer: number) => void;
+  writeArray32ToMemory: (array: (boolean | number)[], buffer: number) => void;
   alloc_pack_bitmap: (ptr: number) => lallegts.BITMAP;
   pack_bitmap: (ptr: number) => void;
   unpack_bitmap: (ptr: number) => number;
@@ -47,6 +49,7 @@ const AllegroJS = {
   // PRIVATE STUFF
   $ALLEG: {
     // HANDLERS
+
     // Index 0 is reserved for default values
     bitmaps: [null],
     bitmap_addrs: [null],
@@ -58,54 +61,55 @@ const AllegroJS = {
     key: null,
 
     // PRIVATE FUNCTIONS
+
     // Writes `array`(array of integers) to memory at address `buffer`
-    writeArray32ToMemory: function (array: number[], buffer: number) {
-      for (let i = 0; i < array.length; i++) {
+    writeArray32ToMemory: function (array: number[], buffer: number): void {
+      for (let i = 0; i < array.length; i += 1) {
         HEAP32[(buffer + i * 4) >> 2] = array[i];
       }
     },
     // Reads `length` integers from memory at address `buffer`
-    readArray32FromMemory: function (buffer: number, length: number) {
+    readArray32FromMemory: function (buffer: number, length: number): number[] {
       const res = [];
-      for (let i = 0; i < length; i++) {
+      for (let i = 0; i < length; i += 1) {
         res.push(HEAP32[(buffer + i * 4) >> 2]);
       }
       return res;
     },
     // Creates C arrays storing key statuses
-    post_install_keyboard: function () {
+    post_install_keyboard: function (): void {
       ALLEG.key = _malloc(4 * lallegts.key.length);
     },
     // Deletes C arrays storing key statuses
-    post_remove_keyboard: function () {
-      if (!ALLEG.key) {
+    post_remove_keyboard: function (): void {
+      if (ALLEG.key === null) {
         return;
       }
       _free(ALLEG.key);
       ALLEG.key = null;
     },
     // Writes JS key arrays to C memory
-    copy_key_statuses: function () {
-      if (!ALLEG.key) {
+    copy_key_statuses: function (): void {
+      if (ALLEG.key === null) {
         return;
       }
       ALLEG.writeArray32ToMemory(lallegts.key, ALLEG.key);
     },
     // Creates `screen` and `font` C globals
-    post_set_gfx_mode: function () {
+    post_set_gfx_mode: function (): void {
       ALLEG.bitmaps[0] = lallegts.screen;
       ALLEG.fonts[0] = lallegts.font;
       ALLEG.screen = ALLEG.alloc_pack_bitmap(0);
     },
     // Stores bitmap infomations in a C bitmap struct
-    pack_bitmap: function (handle: number) {
+    pack_bitmap: function (handle: number): void {
       const addr = ALLEG.bitmap_addrs[handle];
       setValue(addr, handle, "i32");
       setValue(addr + 4, ALLEG.bitmaps[handle].w, "i32");
       setValue(addr + 8, ALLEG.bitmaps[handle].h, "i32");
     },
     // Allocates and packs a bitmap for C
-    alloc_pack_bitmap: function (handle: number) {
+    alloc_pack_bitmap: function (handle: number): number {
       const res = _malloc(3 * 4);
       ALLEG.bitmap_addrs[handle] = res;
       ALLEG.pack_bitmap(handle);
@@ -113,7 +117,7 @@ const AllegroJS = {
     },
     // Repacks every bitmaps (because bitmap loading is asynchronous) called by _ready
     repack_bitmaps: function (): void {
-      for (let it = 1; it < ALLEG.bitmaps.length; it++) {
+      for (let it = 1; it < ALLEG.bitmaps.length; it += 1) {
         ALLEG.pack_bitmap(it);
       }
     },
@@ -128,10 +132,10 @@ const AllegroJS = {
   },
 
   // Bitmap.ts
-  screen: function () {
+  screen: function (): lallegts.BITMAP {
     return ALLEG.screen;
   },
-  create_bitmap: function (width: number, height: number) {
+  create_bitmap: function (width: number, height: number): lallegts.BITMAP {
     return ALLEG.alloc_pack_bitmap(
       ALLEG.bitmaps.push(lallegts.create_bitmap(width, height)) - 1
     );
@@ -140,7 +144,7 @@ const AllegroJS = {
     color_depth: number,
     width: number,
     height: number
-  ) {
+  ): lallegts.BITMAP {
     return ALLEG.alloc_pack_bitmap(
       ALLEG.bitmaps.push(
         lallegts.create_bitmap_ex(color_depth, width, height)
@@ -153,7 +157,7 @@ const AllegroJS = {
     y: number,
     width: number,
     height: number
-  ) {
+  ): lallegts.BITMAP | null {
     const bmp = lallegts.create_sub_bitmap(
       ALLEG.get_bitmap(parent),
       x,
@@ -168,60 +172,66 @@ const AllegroJS = {
 
     return ALLEG.alloc_pack_bitmap(ALLEG.bitmaps.push(bmp) - 1);
   },
-  create_video_bitmap: function (width: number, height: number) {
+  create_video_bitmap: function (
+    width: number,
+    height: number
+  ): lallegts.BITMAP {
     return ALLEG.alloc_pack_bitmap(
       ALLEG.bitmaps.push(lallegts.create_video_bitmap(width, height)) - 1
     );
   },
-  create_system_bitmap: function (width: number, height: number) {
+  create_system_bitmap: function (
+    width: number,
+    height: number
+  ): lallegts.BITMAP {
     return ALLEG.alloc_pack_bitmap(
       ALLEG.bitmaps.push(lallegts.create_system_bitmap(width, height)) - 1
     );
   },
-  destroy_bitmap: function (bmp: number) {
-    return lallegts.destroy_bitmap(ALLEG.get_bitmap(bmp));
+  destroy_bitmap: function (bmp: number): void {
+    lallegts.destroy_bitmap(ALLEG.get_bitmap(bmp));
   },
-  lock_bitmap: function (bitmap: number) {
-    return lallegts.lock_bitmap(ALLEG.get_bitmap(bitmap));
+  lock_bitmap: function (bitmap: number): void {
+    lallegts.lock_bitmap(ALLEG.get_bitmap(bitmap));
   },
-  bitmap_color_depth: function (bmp: number) {
+  bitmap_color_depth: function (bmp: number): number {
     return lallegts.bitmap_color_depth(ALLEG.get_bitmap(bmp));
   },
-  bitmap_mask_color: function (bmp: number) {
+  bitmap_mask_color: function (bmp: number): number {
     return lallegts.bitmap_mask_color(ALLEG.get_bitmap(bmp));
   },
-  is_same_bitmap: function (bmp1: number, bmp2: number) {
+  is_same_bitmap: function (bmp1: number, bmp2: number): boolean {
     return lallegts.is_same_bitmap(
       ALLEG.get_bitmap(bmp1),
       ALLEG.get_bitmap(bmp2)
     );
   },
-  is_planar_bitmap: function (bmp: number) {
+  is_planar_bitmap: function (bmp: number): boolean {
     return lallegts.is_planar_bitmap(ALLEG.get_bitmap(bmp));
   },
-  is_linear_bitmap: function (bmp: number) {
+  is_linear_bitmap: function (bmp: number): boolean {
     return lallegts.is_linear_bitmap(ALLEG.get_bitmap(bmp));
   },
-  is_memory_bitmap: function (bmp: number) {
+  is_memory_bitmap: function (bmp: number): boolean {
     return lallegts.is_memory_bitmap(ALLEG.get_bitmap(bmp));
   },
-  is_screen_bitmap: function (bmp: number) {
+  is_screen_bitmap: function (bmp: number): boolean {
     return lallegts.is_screen_bitmap(ALLEG.get_bitmap(bmp));
   },
-  is_video_bitmap: function (bmp: number) {
+  is_video_bitmap: function (bmp: number): boolean {
     return lallegts.is_video_bitmap(ALLEG.get_bitmap(bmp));
   },
-  is_system_bitmap: function (bmp: number) {
+  is_system_bitmap: function (bmp: number): boolean {
     return lallegts.is_system_bitmap(ALLEG.get_bitmap(bmp));
   },
-  is_sub_bitmap: function (bmp: number) {
+  is_sub_bitmap: function (bmp: number): boolean {
     return lallegts.is_sub_bitmap(ALLEG.get_bitmap(bmp));
   },
-  acquire_bitmap: function (bmp: number) {
-    return lallegts.acquire_bitmap(ALLEG.get_bitmap(bmp));
+  acquire_bitmap: function (bmp: number): void {
+    lallegts.acquire_bitmap(ALLEG.get_bitmap(bmp));
   },
-  release_bitmap: function (bmp: number) {
-    return lallegts.release_bitmap(ALLEG.get_bitmap(bmp));
+  release_bitmap: function (bmp: number): void {
+    lallegts.release_bitmap(ALLEG.get_bitmap(bmp));
   },
   acquire_screen: lallegts.acquire_screen,
   release_screen: lallegts.release_screen,
@@ -231,10 +241,10 @@ const AllegroJS = {
     y1: number,
     x2: number,
     y2: number
-  ) {
-    return lallegts.set_clip_rect(ALLEG.get_bitmap(bitmap), x1, y1, x2, y2);
+  ): void {
+    lallegts.set_clip_rect(ALLEG.get_bitmap(bitmap), x1, y1, x2, y2);
   },
-  get_clip_rect: function (bitmap: number) {
+  get_clip_rect: function (bitmap: number): lallegts.CLIPPING_RECTANGLE | null {
     return lallegts.get_clip_rect(ALLEG.get_bitmap(bitmap));
   },
   add_clip_rect: function (
@@ -243,118 +253,126 @@ const AllegroJS = {
     y1: number,
     x2: number,
     y2: number
-  ) {
-    return lallegts.add_clip_rect(ALLEG.get_bitmap(bitmap), x1, y1, x2, y2);
+  ): void {
+    lallegts.add_clip_rect(ALLEG.get_bitmap(bitmap), x1, y1, x2, y2);
   },
-  set_clip_state: function (bitmap: number, state: boolean) {
-    return lallegts.set_clip_state(ALLEG.get_bitmap(bitmap), state);
+  set_clip_state: function (bitmap: number, state: boolean): void {
+    lallegts.set_clip_state(ALLEG.get_bitmap(bitmap), state);
   },
-  get_clip_state: function (bitmap: number) {
+  get_clip_state: function (bitmap: number): number {
     return lallegts.get_clip_state(ALLEG.get_bitmap(bitmap));
   },
-  is_inside_bitmap: function (bmp: number, x: number, y: number, clip: number) {
+  is_inside_bitmap: function (
+    bmp: number,
+    x: number,
+    y: number,
+    clip: number
+  ): boolean {
     return lallegts.is_inside_bitmap(ALLEG.get_bitmap(bmp), x, y, clip);
   },
-  load_bitmap: function (filename: number, pal: lallegts.RGB | undefined) {
+  load_bitmap: function (
+    filename: number,
+    pal: lallegts.RGB | undefined
+  ): lallegts.BITMAP {
     const filename_s = UTF8ToString(filename);
     return ALLEG.alloc_pack_bitmap(
       ALLEG.bitmaps.push(lallegts.load_bitmap(filename_s, pal)) - 1
     );
   },
-  load_bmp: function (filename: number) {
+  load_bmp: function (filename: number): lallegts.BITMAP {
     const filename_s = UTF8ToString(filename);
     return ALLEG.alloc_pack_bitmap(
       ALLEG.bitmaps.push(lallegts.load_bmp(filename_s)) - 1
     );
   },
-  load_bmp_pf: function (f: any, pal: any) {
+  load_bmp_pf: function (f: string, pal: lallegts.RGB | undefined): null {
     return null;
-    // return ALLEG.alloc_pack_bitmap(
-    //   ALLEG.bitmaps.push(lallegts.load_bmp_pf(f, pal)) - 1
-    // );
   },
-  load_lbm: function (filename: number, pal: lallegts.RGB | undefined) {
+  load_lbm: function (
+    filename: number,
+    pal: lallegts.RGB | undefined
+  ): lallegts.BITMAP {
     const filename_s = UTF8ToString(filename);
     return ALLEG.alloc_pack_bitmap(
       ALLEG.bitmaps.push(lallegts.load_lbm(filename_s, pal)) - 1
     );
   },
-  load_pcx: function (filename: number, pal: lallegts.RGB | undefined) {
+  load_pcx: function (
+    filename: number,
+    pal: lallegts.RGB | undefined
+  ): lallegts.BITMAP {
     const filename_s = UTF8ToString(filename);
     return ALLEG.alloc_pack_bitmap(
       ALLEG.bitmaps.push(lallegts.load_pcx(filename_s, pal)) - 1
     );
   },
-  load_pcx_pf: function (f: any, pal: any) {
+  load_pcx_pf: function (f: string, pal: lallegts.RGB | undefined): null {
     return null;
-    // return ALLEG.alloc_pack_bitmap(
-    //   ALLEG.bitmaps.push(lallegts.load_pcx_pf(f, pal)) - 1
-    // );
   },
-  load_tga: function (filename: number, pal: lallegts.RGB | undefined) {
+  load_tga: function (
+    filename: number,
+    pal: lallegts.RGB | undefined
+  ): lallegts.BITMAP {
     const filename_s = UTF8ToString(filename);
     return ALLEG.alloc_pack_bitmap(
       ALLEG.bitmaps.push(lallegts.load_tga(filename_s, pal)) - 1
     );
   },
-  load_tga_pf: function (f: any, pal: any) {
+  load_tga_pf: function (f: string, pal: lallegts.RGB | undefined): null {
     return null;
-    // return ALLEG.alloc_pack_bitmap(
-    //   ALLEG.bitmaps.push(lallegts.load_tga_pf(f, pal)) - 1
-    // );
   },
   save_bitmap: function (
     filename: number,
     bmp: number,
     pal: lallegts.RGB | undefined
-  ) {
+  ): void {
     const filename_s = UTF8ToString(filename);
-    return lallegts.save_bitmap(filename_s, ALLEG.get_bitmap(bmp), pal);
+    lallegts.save_bitmap(filename_s, ALLEG.get_bitmap(bmp), pal);
   },
   save_bmp: function (
     filename: number,
     bmp: number,
     pal: lallegts.RGB | undefined
-  ) {
+  ): void {
     const filename_s = UTF8ToString(filename);
-    return lallegts.save_bmp(filename_s, ALLEG.get_bitmap(bmp), pal);
+    lallegts.save_bmp(filename_s, ALLEG.get_bitmap(bmp), pal);
   },
   save_bmp_pf: function (
     f: lallegts.PACKFILE,
     bmp: number,
     pal: lallegts.RGB | undefined
-  ) {
-    return lallegts.save_bmp_pf(f, ALLEG.get_bitmap(bmp), pal);
+  ): void {
+    lallegts.save_bmp_pf(f, ALLEG.get_bitmap(bmp), pal);
   },
   save_pcx: function (
     filename: number,
     bmp: number,
     pal: lallegts.RGB | undefined
-  ) {
+  ): void {
     const filename_s = UTF8ToString(filename);
-    return lallegts.save_pcx(filename_s, ALLEG.get_bitmap(bmp), pal);
+    lallegts.save_pcx(filename_s, ALLEG.get_bitmap(bmp), pal);
   },
   save_pcx_pf: function (
     f: lallegts.PACKFILE,
     bmp: number,
     pal: lallegts.RGB | undefined
-  ) {
-    return lallegts.save_pcx_pf(f, ALLEG.get_bitmap(bmp), pal);
+  ): void {
+    lallegts.save_pcx_pf(f, ALLEG.get_bitmap(bmp), pal);
   },
   save_tga: function (
     filename: number,
     bmp: number,
     pal: lallegts.RGB | undefined
-  ) {
+  ): void {
     const filename_s = UTF8ToString(filename);
-    return lallegts.save_tga(filename_s, ALLEG.get_bitmap(bmp), pal);
+    lallegts.save_tga(filename_s, ALLEG.get_bitmap(bmp), pal);
   },
   save_tga_pf: function (
     f: lallegts.PACKFILE,
     bmp: number,
     pal: lallegts.RGB | undefined
-  ) {
-    return lallegts.save_tga_pf(f, ALLEG.get_bitmap(bmp), pal);
+  ): void {
+    lallegts.save_tga_pf(f, ALLEG.get_bitmap(bmp), pal);
   },
   register_bitmap_file_type: function (
     ext: number,
@@ -363,9 +381,9 @@ const AllegroJS = {
       pal?: lallegts.RGB | undefined
     ) => lallegts.BITMAP | undefined,
     save: (filename: string, pal?: lallegts.RGB | undefined) => number
-  ) {
+  ): void {
     const ext_s = UTF8ToString(ext);
-    return lallegts.register_bitmap_file_type(ext_s, load, save);
+    lallegts.register_bitmap_file_type(ext_s, load, save);
   },
   set_color_conversion: lallegts.set_color_conversion,
   loadpng_init: lallegts.loadpng_init,
@@ -412,31 +430,31 @@ const AllegroJS = {
   allegro_init: lallegts.allegro_init,
   allegro_exit: lallegts.allegro_exit,
   END_OF_MAIN: lallegts.END_OF_MAIN,
-  allegro_id: function () {
+  allegro_id: function (): string {
     return lallegts.allegro_id;
   },
-  allegro_error: function () {
+  allegro_error: function (): string {
     return lallegts.allegro_error;
   },
-  ALLEGRO_VERSION: function () {
+  ALLEGRO_VERSION: function (): number {
     return lallegts.ALLEGRO_VERSION;
   },
-  ALLEGRO_SUB_VERSION: function () {
+  ALLEGRO_SUB_VERSION: function (): number {
     return lallegts.ALLEGRO_SUB_VERSION;
   },
-  ALLEGRO_WIP_VERSION: function () {
+  ALLEGRO_WIP_VERSION: function (): number {
     return lallegts.ALLEGRO_WIP_VERSION;
   },
-  ALLEGRO_VERSION_STR: function () {
+  ALLEGRO_VERSION_STR: function (): string {
     return lallegts.ALLEGRO_VERSION_STR;
   },
-  ALLEGRO_DATE_STR: function () {
+  ALLEGRO_DATE_STR: function (): string {
     return lallegts.ALLEGRO_DATE_STR;
   },
-  ALLEGRO_DATE: function () {
+  ALLEGRO_DATE: function (): number {
     return lallegts.ALLEGRO_DATE;
   },
-  AL_ID: function (a: number, b: number, c: number, d: number) {
+  AL_ID: function (a: number, b: number, c: number, d: number): number {
     return lallegts.AL_ID(
       UTF8ToString(a),
       UTF8ToString(b),
@@ -444,42 +462,42 @@ const AllegroJS = {
       UTF8ToString(d)
     );
   },
-  MAKE_VERSION: function (a: number, b: number, c: number) {
+  MAKE_VERSION: function (a: number, b: number, c: number): number {
     return lallegts.MAKE_VERSION(
       UTF8ToString(a),
       UTF8ToString(b),
       UTF8ToString(c)
     );
   },
-  os_type: function () {
+  os_type: function (): string {
     return lallegts.os_type;
   },
-  os_version: function () {
+  os_version: function (): number {
     return lallegts.os_version;
   },
-  os_multitasking: function () {
+  os_multitasking: function (): boolean {
     return lallegts.os_multitasking;
   },
-  _allegro_message: function (str: number) {
+  _allegro_message: function (str: number): void {
     lallegts.allegro_message(UTF8ToString(str));
   },
-  set_window_title: function (name: number) {
+  set_window_title: function (name: number): void {
     lallegts.set_window_title(UTF8ToString(name));
   },
   set_close_button_callback: lallegts.set_close_button_callback,
   desktop_color_depth: lallegts.desktop_color_depth,
   get_desktop_resolution: lallegts.get_desktop_resolution,
   check_cpu: lallegts.check_cpu,
-  cpu_vendor: function () {
+  cpu_vendor: function (): string {
     return lallegts.cpu_vendor;
   },
-  cpu_family: function () {
+  cpu_family: function (): string {
     return lallegts.cpu_family;
   },
-  cpu_model: function () {
+  cpu_model: function (): string {
     return lallegts.cpu_model;
   },
-  cpu_capabilities: function () {
+  cpu_capabilities: function (): number {
     return lallegts.cpu_capabilities;
   },
 
@@ -510,13 +528,13 @@ const AllegroJS = {
   free_config_entries: lallegts.free_config_entries,
 
   // Core.ts
-  init_allegro_ts: function (canvas_id: number) {
+  init_allegro_ts: function (canvas_id: number): void {
     const cid_s = UTF8ToString(canvas_id);
     lallegts.init_allegro_ts(cid_s);
     ALLEG.post_set_gfx_mode();
   },
   loading_bar: lallegts.loading_bar,
-  allegro_ready: function () {
+  allegro_ready: function (): void {
     Asyncify.handleAsync(async () => {
       await lallegts.allegro_ready();
       ALLEG.repack_bitmaps();
@@ -524,27 +542,27 @@ const AllegroJS = {
   },
 
   // Debug.ts
-  enable_debug: function (debug_id: number) {
+  enable_debug: function (debug_id: number): void {
     lallegts.enable_debug(UTF8ToString(debug_id));
   },
 
   // Font.ts
   register_font_file_type: lallegts.register_font_file_type,
-  load_font: function (filename: number) {
+  load_font: function (filename: number): number {
     const filename_s = UTF8ToString(filename);
     return ALLEG.fonts.push(lallegts.load_font(filename_s)) - 1;
   },
-  destroy_font: function (f: number) {
-    return lallegts.destroy_font(ALLEG.fonts[f]);
+  destroy_font: function (f: number): void {
+    lallegts.destroy_font(ALLEG.fonts[f]);
   },
   make_trans_font: lallegts.make_trans_font,
-  is_color_font: function (f: number) {
+  is_color_font: function (f: number): boolean {
     return lallegts.is_color_font(ALLEG.fonts[f]);
   },
-  is_mono_font: function (f: number) {
+  is_mono_font: function (f: number): boolean {
     return lallegts.is_mono_font(ALLEG.fonts[f]);
   },
-  is_compatible_font: function (f: number) {
+  is_compatible_font: function (f: number): boolean {
     return lallegts.is_compatible_font(ALLEG.fonts[f]);
   },
   get_font_ranges: lallegts.get_font_ranges,
@@ -553,10 +571,10 @@ const AllegroJS = {
   extract_font_range: lallegts.extract_font_range,
   transpose_font: lallegts.transpose_font,
   merge_fonts: lallegts.merge_fonts,
-  text_length: function (f: number, s: number) {
+  text_length: function (f: number, s: number): number {
     return lallegts.text_length(ALLEG.fonts[f], UTF8ToString(s));
   },
-  text_height: function (f: number) {
+  text_height: function (f: number): number {
     return lallegts.text_height(ALLEG.fonts[f]);
   },
   textout_ex: function (
@@ -567,7 +585,7 @@ const AllegroJS = {
     y: number,
     color: number,
     bg: number
-  ) {
+  ): void {
     const str = UTF8ToString(s);
     lallegts.textout_ex(
       ALLEG.get_bitmap(bitmap),
@@ -587,7 +605,7 @@ const AllegroJS = {
     y: number,
     color: number,
     bg: number
-  ) {
+  ): void {
     const str = UTF8ToString(s);
     lallegts.textout_centre_ex(
       ALLEG.get_bitmap(bitmap),
@@ -607,7 +625,7 @@ const AllegroJS = {
     y: number,
     color: number,
     bg: number
-  ) {
+  ): void {
     const str = UTF8ToString(s);
     lallegts.textout_right_ex(
       ALLEG.get_bitmap(bitmap),
@@ -627,7 +645,7 @@ const AllegroJS = {
     y: number,
     color: number,
     bg: number
-  ) {
+  ): void {
     const str = UTF8ToString(s);
     lallegts.textout_justify_ex(
       ALLEG.get_bitmap(bitmap),
@@ -647,7 +665,7 @@ const AllegroJS = {
     color: number,
     bg: number,
     s: number
-  ) {
+  ): void {
     const str = UTF8ToString(s);
     lallegts.textprintf_ex(
       ALLEG.get_bitmap(bitmap),
@@ -667,7 +685,7 @@ const AllegroJS = {
     color: number,
     bg: number,
     s: number
-  ) {
+  ): void {
     const str = UTF8ToString(s);
     lallegts.textprintf_centre_ex(
       ALLEG.get_bitmap(bitmap),
@@ -687,7 +705,7 @@ const AllegroJS = {
     color: number,
     bg: number,
     s: number
-  ) {
+  ): void {
     const str = UTF8ToString(s);
     lallegts.textprintf_right_ex(
       ALLEG.get_bitmap(bitmap),
@@ -707,7 +725,7 @@ const AllegroJS = {
     color: number,
     bg: number,
     s: number
-  ) {
+  ): void {
     const str = UTF8ToString(s);
     lallegts.textprintf_justify_ex(
       ALLEG.get_bitmap(bitmap),
@@ -721,13 +739,13 @@ const AllegroJS = {
   },
 
   // Graphics.ts
-  gfx_driver: function () {
+  gfx_driver: function (): typeof lallegts.gfx_driver {
     return lallegts.gfx_driver;
   },
-  SCREEN_W: function () {
+  SCREEN_W: function (): number {
     return lallegts.SCREEN_W;
   },
-  SCREEN_H: function () {
+  SCREEN_H: function (): number {
     return lallegts.SCREEN_H;
   },
   set_color_depth: lallegts.set_color_depth,
@@ -742,11 +760,12 @@ const AllegroJS = {
     h: number,
     v_w: number | undefined,
     v_h: number | undefined
-  ) {
-    lallegts.set_gfx_mode(card, w, h, v_w, v_h);
+  ): number {
+    const res = lallegts.set_gfx_mode(card, w, h, v_w, v_h);
     ALLEG.post_set_gfx_mode();
+    return res;
   },
-  gfx_capabilities: function () {
+  gfx_capabilities: function (): number {
     return lallegts.gfx_capabilities;
   },
   set_display_switch_mode: lallegts.set_display_switch_mode,
@@ -758,12 +777,12 @@ const AllegroJS = {
   scroll_screen: lallegts.scroll_screen,
   request_scroll: lallegts.request_scroll,
   poll_scroll: lallegts.poll_scroll,
-  show_video_bitmap: function (bmp: number) {
+  show_video_bitmap: function (bmp: number): void {
     lallegts.show_video_bitmap(ALLEG.get_bitmap(bmp));
   },
   request_video_bitmap: lallegts.request_video_bitmap,
   vsync: lallegts.vsync,
-  font: function () {
+  font: function (): number {
     return 0;
   },
 
@@ -772,10 +791,10 @@ const AllegroJS = {
   poll_keyboard: lallegts.poll_keyboard,
   keyboard_needs_poll: lallegts.keyboard_needs_poll,
   keypressed: lallegts.keypressed,
-  readkey: function () {
-    return Asyncify.handleAsync(async () => {
-      return await lallegts.readkey();
-    });
+  readkey: function (): number {
+    return Asyncify.handleAsync(
+      async (): Promise<number> => lallegts.readkey()
+    );
   },
   ureadkey: lallegts.ureadkey,
   scancode_to_ascii: lallegts.scancode_to_ascii,
@@ -789,15 +808,15 @@ const AllegroJS = {
   set_keyboard_rate: lallegts.set_keyboard_rate,
   clear_keybuf: lallegts.clear_keybuf,
 
-  key: function () {
+  key: function (): number | null {
     ALLEG.copy_key_statuses();
     return ALLEG.key;
   },
-  install_keyboard: function () {
+  install_keyboard: function (): void {
     lallegts.install_keyboard();
     ALLEG.post_install_keyboard();
   },
-  remove_keyboard: function () {
+  remove_keyboard: function (): void {
     lallegts.remove_keyboard();
     ALLEG.post_remove_keyboard();
   },
@@ -811,7 +830,7 @@ const AllegroJS = {
   disable_hardware_cursor: lallegts.disable_hardware_cursor,
   select_mouse_cursor: lallegts.select_mouse_cursor,
   set_mouse_cursor_bitmap: lallegts.set_mouse_cursor_bitmap,
-  show_mouse: function (bmp: number) {
+  show_mouse: function (bmp: number): void {
     lallegts.show_mouse(ALLEG.get_bitmap(bmp));
   },
   scare_mouse: lallegts.scare_mouse,
@@ -825,69 +844,69 @@ const AllegroJS = {
   set_mouse_sprite_focus: lallegts.set_mouse_sprite_focus,
   get_mouse_mickeys: lallegts.get_mouse_mickeys,
   mouse_callback: lallegts.mouse_callback,
-  mouse_x: function () {
+  mouse_x: function (): number {
     return lallegts.mouse_x;
   },
-  mouse_y: function () {
+  mouse_y: function (): number {
     return lallegts.mouse_y;
   },
-  mouse_z: function () {
+  mouse_z: function (): number {
     return lallegts.mouse_z;
   },
-  mouse_w: function () {
+  mouse_w: function (): number {
     return lallegts.mouse_w;
   },
-  mouse_b: function () {
+  mouse_b: function (): number {
     return lallegts.mouse_b;
   },
 
   // Palette.ts
-  set_palette: function (pal: lallegts.RGB | lallegts.PALETTE) {
+  set_palette: function (pal: lallegts.PALETTE | lallegts.RGB): void {
     lallegts.set_palette(pal);
   },
 
   // Primitives.ts
-  clear_bitmap: function (bitmap: number) {
+  clear_bitmap: function (bitmap: number): void {
     lallegts.clear_bitmap(ALLEG.get_bitmap(bitmap));
   },
-  clear_to_color: function (bitmap: number, color: number) {
+  clear_to_color: function (bitmap: number, color: number): void {
     lallegts.clear_to_color(ALLEG.get_bitmap(bitmap), color);
   },
-  putpixel: function (bmp: number, x: number, y: number, c: number) {
+  putpixel: function (bmp: number, x: number, y: number, c: number): void {
     lallegts.putpixel(ALLEG.get_bitmap(bmp), x, y, c);
   },
-  _putpixel: function (bmp: number, x: number, y: number, c: number) {
+  _putpixel: function (bmp: number, x: number, y: number, c: number): void {
     lallegts._putpixel(ALLEG.get_bitmap(bmp), x, y, c);
   },
-  _putpixel15: function (bmp: number, x: number, y: number, c: number) {
+  _putpixel15: function (bmp: number, x: number, y: number, c: number): void {
     lallegts._putpixel15(ALLEG.get_bitmap(bmp), x, y, c);
   },
-  _putpixel16: function (bmp: number, x: number, y: number, c: number) {
+  _putpixel16: function (bmp: number, x: number, y: number, c: number): void {
     lallegts._putpixel16(ALLEG.get_bitmap(bmp), x, y, c);
   },
-  _putpixel24: function (bmp: number, x: number, y: number, c: number) {
+  _putpixel24: function (bmp: number, x: number, y: number, c: number): void {
     lallegts._putpixel24(ALLEG.get_bitmap(bmp), x, y, c);
   },
-  _putpixel32: function (bmp: number, x: number, y: number, c: number) {
+  _putpixel32: function (bmp: number, x: number, y: number, c: number): void {
     lallegts._putpixel32(ALLEG.get_bitmap(bmp), x, y, c);
   },
-  getpixel: function (bitmap: number, x: number, y: number) {
-    return lallegts.getpixel(ALLEG.get_bitmap(bitmap), x, y);
+  getpixel: function (bitmap: number, x: number, y: number): void {
+    lallegts.getpixel(ALLEG.get_bitmap(bitmap), x, y);
   },
-  _getpixel: function (bitmap: number, x: number, y: number) {
-    return lallegts._getpixel(ALLEG.get_bitmap(bitmap), x, y);
+  _getpixel: function (bitmap: number, x: number, y: number): void {
+    lallegts._getpixel(ALLEG.get_bitmap(bitmap), x, y);
   },
-  _getpixel15: function (bitmap: number, x: number, y: number) {
-    return lallegts._getpixel(ALLEG.get_bitmap(bitmap), x, y);
+  _getpixel15: function (bitmap: number, x: number, y: number): void {
+    lallegts._getpixel(ALLEG.get_bitmap(bitmap), x, y);
   },
-  _getpixel16: function (bitmap: number, x: number, y: number) {
-    return lallegts._getpixel(ALLEG.get_bitmap(bitmap), x, y);
+  _getpixel16: function (bitmap: number, x: number, y: number): void {
+    lallegts._getpixel(ALLEG.get_bitmap(bitmap), x, y);
   },
-  _getpixel24: function (bitmap: number, x: number, y: number) {
-    return lallegts._getpixel(ALLEG.get_bitmap(bitmap), x, y);
+  _getpixel24: function (bitmap: number, x: number, y: number): void {
+    lallegts._getpixel(ALLEG.get_bitmap(bitmap), x, y);
   },
-  _getpixel32: function (bitmap: number, x: number, y: number) {
-    return lallegts._getpixel(ALLEG.get_bitmap(bitmap), x, y);
+  _getpixel32: function (bitmap: number, x: number, y: number): void {
+    lallegts._getpixel(ALLEG.get_bitmap(bitmap), x, y);
   },
   vline: function (
     bitmap: number,
@@ -895,7 +914,7 @@ const AllegroJS = {
     y1: number,
     y2: number,
     color: number
-  ) {
+  ): void {
     lallegts.vline(ALLEG.get_bitmap(bitmap), x, y1, y2, color);
   },
   hline: function (
@@ -904,7 +923,7 @@ const AllegroJS = {
     y: number,
     x2: number,
     color: number
-  ) {
+  ): void {
     lallegts.hline(ALLEG.get_bitmap(bitmap), x1, y, x2, color);
   },
   line: function (
@@ -914,7 +933,7 @@ const AllegroJS = {
     x2: number,
     y2: number,
     color: number
-  ) {
+  ): void {
     lallegts.line(ALLEG.get_bitmap(bitmap), x1, y1, x2, y2, color);
   },
   fastline: function (
@@ -924,7 +943,7 @@ const AllegroJS = {
     x2: number,
     y2: number,
     color: number
-  ) {
+  ): void {
     lallegts.fastline(ALLEG.get_bitmap(bitmap), x1, y1, x2, y2, color);
   },
   triangle: function (
@@ -936,7 +955,7 @@ const AllegroJS = {
     x3: number,
     y3: number,
     color: number
-  ) {
+  ): void {
     lallegts.triangle(ALLEG.get_bitmap(bitmap), x1, y1, x2, y2, x3, y3, color);
   },
   polygon: function (
@@ -944,7 +963,7 @@ const AllegroJS = {
     vertices: number,
     points: number,
     color: number
-  ) {
+  ): void {
     const points_arr = ALLEG.readArray32FromMemory(points, vertices * 2);
     lallegts.polygon(ALLEG.get_bitmap(bitmap), vertices, points_arr, color);
   },
@@ -955,7 +974,7 @@ const AllegroJS = {
     x2: number,
     y2: number,
     color: number
-  ) {
+  ): void {
     lallegts.rect(ALLEG.get_bitmap(bitmap), x1, y1, x2, y2, color);
   },
   rectfill: function (
@@ -965,7 +984,7 @@ const AllegroJS = {
     x2: number,
     y2: number,
     color: number
-  ) {
+  ): void {
     lallegts.rectfill(ALLEG.get_bitmap(bitmap), x1, y1, x2, y2, color);
   },
   circle: function (
@@ -974,7 +993,7 @@ const AllegroJS = {
     y: number,
     radius: number,
     color: number
-  ) {
+  ): void {
     lallegts.circle(ALLEG.get_bitmap(bitmap), x, y, radius, color);
   },
   circlefill: function (
@@ -983,7 +1002,7 @@ const AllegroJS = {
     y: number,
     radius: number,
     color: number
-  ) {
+  ): void {
     lallegts.circlefill(ALLEG.get_bitmap(bitmap), x, y, radius, color);
   },
   ellipse: function (
@@ -993,7 +1012,7 @@ const AllegroJS = {
     rx: number,
     ry: number,
     color: number
-  ) {
+  ): void {
     lallegts.ellipse(ALLEG.get_bitmap(bitmap), x, y, rx, ry, color);
   },
   ellipsefill: function (
@@ -1003,7 +1022,7 @@ const AllegroJS = {
     rx: number,
     ry: number,
     color: number
-  ) {
+  ): void {
     lallegts.ellipsefill(ALLEG.get_bitmap(bitmap), x, y, rx, ry, color);
   },
   arc: function (
@@ -1014,25 +1033,25 @@ const AllegroJS = {
     ang2: number,
     radius: number,
     color: number
-  ) {
+  ): void {
     lallegts.arc(ALLEG.get_bitmap(bitmap), x, y, ang1, ang2, radius, color);
   },
-  spline: function (bitmap: number, points: number, color: number) {
+  spline: function (bitmap: number, points: number, color: number): void {
     const points_arr = ALLEG.readArray32FromMemory(points, 8);
     lallegts.spline(ALLEG.get_bitmap(bitmap), points_arr, color);
   },
-  floodfill: function (bmp: number, x: number, y: number, color: number) {
+  floodfill: function (bmp: number, x: number, y: number, color: number): void {
     lallegts.floodfill(ALLEG.get_bitmap(bmp), x, y, color);
   },
 
   // Sample.ts
-  digi_driver: function () {
+  digi_driver: function (): typeof lallegts.digi_driver {
     return lallegts.digi_driver;
   },
   install_sound: lallegts.install_sound,
   set_volume: lallegts.set_volume,
   get_volume: lallegts.get_volume,
-  load_sample: function (filename: number) {
+  load_sample: function (filename: number): number {
     return Asyncify.handleAsync(async () => {
       const filename_s = UTF8ToString(filename);
       const sample = await lallegts.load_sample(filename_s);
@@ -1040,7 +1059,7 @@ const AllegroJS = {
       return index;
     });
   },
-  destroy_sample: function (sample: number) {
+  destroy_sample: function (sample: number): void {
     lallegts.destroy_sample(ALLEG.samples[sample]);
   },
   play_sample: function (
@@ -1049,7 +1068,7 @@ const AllegroJS = {
     pan: number | undefined,
     freq: number | undefined,
     loop: boolean | undefined
-  ) {
+  ): void {
     lallegts.play_sample(ALLEG.samples[sample], vol, pan, freq, loop);
   },
   adjust_sample: function (
@@ -1058,10 +1077,10 @@ const AllegroJS = {
     pan: number,
     freq: number,
     loop: boolean
-  ) {
+  ): void {
     lallegts.adjust_sample(ALLEG.samples[sample], vol, pan, freq, loop);
   },
-  stop_sample: function (sample: number) {
+  stop_sample: function (sample: number): void {
     lallegts.stop_sample(ALLEG.samples[sample]);
   },
 
@@ -1071,7 +1090,7 @@ const AllegroJS = {
     sprite: number,
     x: number,
     y: number
-  ) {
+  ): void {
     lallegts.draw_sprite_h_flip(
       ALLEG.get_bitmap(bmp),
       ALLEG.get_bitmap(sprite),
@@ -1086,7 +1105,7 @@ const AllegroJS = {
     y: number,
     w: number,
     h: number
-  ) {
+  ): void {
     lallegts.stretch_sprite(
       ALLEG.get_bitmap(bmp),
       ALLEG.get_bitmap(sprite),
@@ -1096,7 +1115,12 @@ const AllegroJS = {
       h
     );
   },
-  draw_sprite: function (bmp: number, sprite: number, x: number, y: number) {
+  draw_sprite: function (
+    bmp: number,
+    sprite: number,
+    x: number,
+    y: number
+  ): void {
     lallegts.draw_sprite(ALLEG.get_bitmap(bmp), ALLEG.get_bitmap(sprite), x, y);
   },
   rotate_sprite: function (
@@ -1105,7 +1129,7 @@ const AllegroJS = {
     x: number,
     y: number,
     angle: number
-  ) {
+  ): void {
     lallegts.rotate_sprite(
       ALLEG.get_bitmap(bmp),
       ALLEG.get_bitmap(sprite),
@@ -1122,7 +1146,7 @@ const AllegroJS = {
     cx: number,
     cy: number,
     angle: number
-  ) {
+  ): void {
     lallegts.pivot_sprite(
       ALLEG.get_bitmap(bmp),
       ALLEG.get_bitmap(sprite),
@@ -1140,7 +1164,7 @@ const AllegroJS = {
     y: number,
     angle: number,
     scale: number
-  ) {
+  ): void {
     lallegts.rotate_scaled_sprite(
       ALLEG.get_bitmap(bmp),
       ALLEG.get_bitmap(sprite),
@@ -1159,7 +1183,7 @@ const AllegroJS = {
     cy: number,
     angle: number,
     scale: number
-  ) {
+  ): void {
     lallegts.pivot_scaled_sprite(
       ALLEG.get_bitmap(bmp),
       ALLEG.get_bitmap(sprite),
@@ -1180,7 +1204,7 @@ const AllegroJS = {
     dy: number,
     w: number,
     h: number
-  ) {
+  ): void {
     lallegts.blit(
       ALLEG.get_bitmap(source),
       ALLEG.get_bitmap(dest),
@@ -1203,7 +1227,7 @@ const AllegroJS = {
     dy: number,
     dw: number,
     dh: number
-  ) {
+  ): void {
     lallegts.stretch_blit(
       ALLEG.get_bitmap(source),
       ALLEG.get_bitmap(dest),
@@ -1220,31 +1244,31 @@ const AllegroJS = {
 
   // Timer.ts
   install_timer: lallegts.install_timer,
-  install_int: function (p: () => void, msec: number) {
-    const procedure = () => {
+  install_int: function (p: () => void, msec: number): void {
+    const procedure = (): void => {
       const stack = stackSave();
       dynCall("v", p, null);
       stackRestore(stack);
     };
     lallegts.install_int(procedure, msec);
   },
-  install_int_ex: function (p: () => void, speed: number) {
-    const procedure = () => {
+  install_int_ex: function (p: () => void, speed: number): void {
+    const procedure = (): void => {
       const stack = stackSave();
       dynCall("v", p, null);
       stackRestore(stack);
     };
     lallegts.install_int_ex(procedure, speed);
   },
-  remove_int: function (p: any) {
-    // FIXME: how is this supposed to work!?
+  remove_int: function (p: number): void {
+    // How is this supposed to work!?
   },
-  rest: function (time: number) {
+  rest: function (time: number): void {
     Asyncify.handleAsync(async () => {
       await lallegts.rest(time);
     });
   },
-  retrace_count: function () {
+  retrace_count: function (): number {
     return lallegts.retrace_count;
   },
 };
