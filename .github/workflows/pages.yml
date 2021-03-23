@@ -32,7 +32,7 @@ jobs:
         run: |
           cd examples
           emcmake cmake .
-          make -j4
+          sudo make -j4
 
       - name: Deploy to Pages
         uses: JamesIves/github-pages-deploy-action@3.7.1
