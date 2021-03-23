@@ -24,14 +24,8 @@ else
 fi
 
 # Clone source
-echo "Cloning allegro-ts @ latest"
-git clone https://github.com/alegemaate/allegro-ts build/allegro-ts
-
-cd build/allegro-ts
-latesttag=$(git describe --tags)
-git checkout ${latesttag}
-
 echo "Building allegro-ts @ latest"
+cd lib
 yarn
 yarn build --module es6 --removeComments true --sourceMap false
 
@@ -39,21 +33,21 @@ yarn build --module es6 --removeComments true --sourceMap false
 echo "Creating js library from allegro-ts @ latest"
 for filename in ./lib/*.js; do
   [ -e "$filename" ] || continue
-  cat "$filename" >> ../allegro-ts-flat.js
-  echo "" >> ../allegro-ts-flat.js
+  cat "$filename" >> ../build/allegro-ts-flat.js
+  echo "" >> ../build/allegro-ts-flat.js
 done
 
 # Replace
 if [ "$OSTYPE" == "osx" ]; then
-  sed -i "" "s/export.*\*.*from.*$//g" ../allegro-ts-flat.js
-  sed -i "" "s/import.*$//g" ../allegro-ts-flat.js
-  sed -i "" "s/export [{].*[}];//g" ../allegro-ts-flat.js
-  sed -i "" "s/export//g" ../allegro-ts-flat.js
+  sed -i "" "s/export.*\*.*from.*$//g" ../build/allegro-ts-flat.js
+  sed -i "" "s/import.*$//g" ../build/allegro-ts-flat.js
+  sed -i "" "s/export [{].*[}];//g" ../build/allegro-ts-flat.js
+  sed -i "" "s/export//g" ../build/allegro-ts-flat.js
 else
-  sed -i "s/export.*\*.*from.*$//g" ../allegro-ts-flat.js
-  sed -i "s/import.*$//g" ../allegro-ts-flat.js
-  sed -i "s/export [{].*[}];//g" ../allegro-ts-flat.js
-  sed -i "s/export//g" ../allegro-ts-flat.js
+  sed -i "s/export.*\*.*from.*$//g" ../build/allegro-ts-flat.js
+  sed -i "s/import.*$//g" ../build/allegro-ts-flat.js
+  sed -i "s/export [{].*[}];//g" ../build/allegro-ts-flat.js
+  sed -i "s/export//g" ../build/allegro-ts-flat.js
 fi
 
 # Done!
