@@ -1,0 +1,43 @@
+name: Deploy Site
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    name: Deploy Site
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          submodules: true
+
+      - name: Restore node modules from cache
+        uses: actions/cache@v2
+        with:
+          path: ~/.cache/yarn
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: ${{ runner.os }}-yarn-
+
+      - name: Setup
+        run: sudo ./setup.sh
+
+      - name: Setup Emscripten
+        uses: mymindstorm/setup-emsdk@v7
+
+      - name: Build examples
+        run: |
+          cd examples
+          emcmake cmake .
+          sudo make -j4
+
+      - name: Deploy to Pages
+        uses: JamesIves/github-pages-deploy-action@3.7.1
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BRANCH: gh-pages
+          FOLDER: build
+          SINGLE_COMMIT: true

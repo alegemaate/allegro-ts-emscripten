@@ -97,7 +97,7 @@ extern int MAKE_VERSION(int a, int b, int c);
 extern void _allegro_message(const char* str);
 
 // Native code needed
-inline void allegro_message(const char* str, ...) {
+void allegro_message(const char* str, ...) {
   char buffer[256];
   va_list args;
   va_start(args, str);
@@ -533,14 +533,14 @@ extern void _textprintf_ex(BITMAP* bmp,
                            const char* s);
 
 // Native code needed
-inline void textprintf_ex(BITMAP* bmp,
-                          FONT* f,
-                          int x,
-                          int y,
-                          int color,
-                          int bg,
-                          const char* s,
-                          ...) {
+void textprintf_ex(BITMAP* bmp,
+                   FONT* f,
+                   int x,
+                   int y,
+                   int color,
+                   int bg,
+                   const char* s,
+                   ...) {
   char buffer[256];
   va_list args;
   va_start(args, s);
@@ -559,14 +559,14 @@ extern void _textprintf_centre_ex(BITMAP* bmp,
                                   const char* s);
 
 // Native code needed
-inline void textprintf_centre_ex(BITMAP* bmp,
-                                 FONT* f,
-                                 int x,
-                                 int y,
-                                 int color,
-                                 int bg,
-                                 const char* s,
-                                 ...) {
+void textprintf_centre_ex(BITMAP* bmp,
+                          FONT* f,
+                          int x,
+                          int y,
+                          int color,
+                          int bg,
+                          const char* s,
+                          ...) {
   char buffer[256];
   va_list args;
   va_start(args, s);
@@ -585,14 +585,14 @@ extern void _textprintf_right_ex(BITMAP* bmp,
                                  const char* s);
 
 // Native code needed
-inline void textprintf_right_ex(BITMAP* bmp,
-                                FONT* f,
-                                int x,
-                                int y,
-                                int color,
-                                int bg,
-                                const char* s,
-                                ...) {
+void textprintf_right_ex(BITMAP* bmp,
+                         FONT* f,
+                         int x,
+                         int y,
+                         int color,
+                         int bg,
+                         const char* s,
+                         ...) {
   char buffer[256];
   va_list args;
   va_start(args, s);
@@ -611,14 +611,14 @@ extern void _textprintf_justify_ex(BITMAP* bmp,
                                    const char* s);
 
 // Native code needed
-inline void textprintf_justify_ex(BITMAP* bmp,
-                                  FONT* f,
-                                  int x,
-                                  int y,
-                                  int color,
-                                  int bg,
-                                  const char* s,
-                                  ...) {
+void textprintf_justify_ex(BITMAP* bmp,
+                           FONT* f,
+                           int x,
+                           int y,
+                           int color,
+                           int bg,
+                           const char* s,
+                           ...) {
   char buffer[256];
   va_list args;
   va_start(args, s);
