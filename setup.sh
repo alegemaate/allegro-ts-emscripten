@@ -12,6 +12,7 @@ echo -e "\033[1;35mInstalling packages\033[0m"
 yarn
 echo ""
 
+
 # Build project
 echo -e "\033[1;35mBuilding emscripten library\033[0m"
 yarn build
