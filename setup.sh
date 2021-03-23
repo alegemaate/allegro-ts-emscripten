@@ -59,4 +59,3 @@ echo ""
 
 # Done!
 echo -e "\033[1;32mDone!\033[0m"
-read -p "Press any key..."
