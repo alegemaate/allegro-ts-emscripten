@@ -39,3 +39,13 @@ npm i -g serve
 cd build
 serve
 ```
+
+### Examples
+
+- [colortest](https://alegemaate.com/allegro-ts-emscripten/colortest)
+- [exaccel](https://alegemaate.com/allegro-ts-emscripten/exaccel)
+- [exbmp](https://alegemaate.com/allegro-ts-emscripten/exbmp)
+- [exbounce](https://alegemaate.com/allegro-ts-emscripten/exbounce)
+- [exflip](https://alegemaate.com/allegro-ts-emscripten/exflip)
+- [exprimitives](https://alegemaate.com/allegro-ts-emscripten/exprimitives)
+- [exstress](https://alegemaate.com/allegro-ts-emscripten/exstress)
