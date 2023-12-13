@@ -1,4 +1,4 @@
-import lallegts, { BITMAP } from "allegro-ts";
+import lallegts from "allegro-ts";
 
 // Memory declarations
 declare const HEAP32: number[];
@@ -137,18 +137,18 @@ const AllegroJS = {
   },
   create_bitmap: function (width: number, height: number): lallegts.BITMAP {
     return ALLEG.alloc_pack_bitmap(
-      ALLEG.bitmaps.push(lallegts.create_bitmap(width, height)) - 1
+      ALLEG.bitmaps.push(lallegts.create_bitmap(width, height)) - 1,
     );
   },
   create_bitmap_ex: function (
     color_depth: number,
     width: number,
-    height: number
+    height: number,
   ): lallegts.BITMAP {
     return ALLEG.alloc_pack_bitmap(
       ALLEG.bitmaps.push(
-        lallegts.create_bitmap_ex(color_depth, width, height)
-      ) - 1
+        lallegts.create_bitmap_ex(color_depth, width, height),
+      ) - 1,
     );
   },
   create_sub_bitmap: function (
@@ -156,14 +156,14 @@ const AllegroJS = {
     x: number,
     y: number,
     width: number,
-    height: number
+    height: number,
   ): lallegts.BITMAP | null {
     const bmp = lallegts.create_sub_bitmap(
       ALLEG.get_bitmap(parent),
       x,
       y,
       width,
-      height
+      height,
     );
 
     if (!bmp) {
@@ -174,18 +174,18 @@ const AllegroJS = {
   },
   create_video_bitmap: function (
     width: number,
-    height: number
+    height: number,
   ): lallegts.BITMAP {
     return ALLEG.alloc_pack_bitmap(
-      ALLEG.bitmaps.push(lallegts.create_video_bitmap(width, height)) - 1
+      ALLEG.bitmaps.push(lallegts.create_video_bitmap(width, height)) - 1,
     );
   },
   create_system_bitmap: function (
     width: number,
-    height: number
+    height: number,
   ): lallegts.BITMAP {
     return ALLEG.alloc_pack_bitmap(
-      ALLEG.bitmaps.push(lallegts.create_system_bitmap(width, height)) - 1
+      ALLEG.bitmaps.push(lallegts.create_system_bitmap(width, height)) - 1,
     );
   },
   destroy_bitmap: function (bmp: number): void {
@@ -203,7 +203,7 @@ const AllegroJS = {
   is_same_bitmap: function (bmp1: number, bmp2: number): boolean {
     return lallegts.is_same_bitmap(
       ALLEG.get_bitmap(bmp1),
-      ALLEG.get_bitmap(bmp2)
+      ALLEG.get_bitmap(bmp2),
     );
   },
   is_planar_bitmap: function (bmp: number): boolean {
@@ -240,7 +240,7 @@ const AllegroJS = {
     x1: number,
     y1: number,
     x2: number,
-    y2: number
+    y2: number,
   ): void {
     lallegts.set_clip_rect(ALLEG.get_bitmap(bitmap), x1, y1, x2, y2);
   },
@@ -252,7 +252,7 @@ const AllegroJS = {
     x1: number,
     y1: number,
     x2: number,
-    y2: number
+    y2: number,
   ): void {
     lallegts.add_clip_rect(ALLEG.get_bitmap(bitmap), x1, y1, x2, y2);
   },
@@ -266,23 +266,23 @@ const AllegroJS = {
     bmp: number,
     x: number,
     y: number,
-    clip: number
+    clip: number,
   ): boolean {
     return lallegts.is_inside_bitmap(ALLEG.get_bitmap(bmp), x, y, clip);
   },
   load_bitmap: function (
     filename: number,
-    pal: lallegts.RGB | undefined
+    pal: lallegts.RGB | undefined,
   ): lallegts.BITMAP {
     const filename_s = UTF8ToString(filename);
     return ALLEG.alloc_pack_bitmap(
-      ALLEG.bitmaps.push(lallegts.load_bitmap(filename_s, pal)) - 1
+      ALLEG.bitmaps.push(lallegts.load_bitmap(filename_s, pal)) - 1,
     );
   },
   load_bmp: function (filename: number): lallegts.BITMAP {
     const filename_s = UTF8ToString(filename);
     return ALLEG.alloc_pack_bitmap(
-      ALLEG.bitmaps.push(lallegts.load_bmp(filename_s)) - 1
+      ALLEG.bitmaps.push(lallegts.load_bmp(filename_s)) - 1,
     );
   },
   load_bmp_pf: function (f: string, pal: lallegts.RGB | undefined): null {
@@ -290,20 +290,20 @@ const AllegroJS = {
   },
   load_lbm: function (
     filename: number,
-    pal: lallegts.RGB | undefined
+    pal: lallegts.RGB | undefined,
   ): lallegts.BITMAP {
     const filename_s = UTF8ToString(filename);
     return ALLEG.alloc_pack_bitmap(
-      ALLEG.bitmaps.push(lallegts.load_lbm(filename_s, pal)) - 1
+      ALLEG.bitmaps.push(lallegts.load_lbm(filename_s, pal)) - 1,
     );
   },
   load_pcx: function (
     filename: number,
-    pal: lallegts.RGB | undefined
+    pal: lallegts.RGB | undefined,
   ): lallegts.BITMAP {
     const filename_s = UTF8ToString(filename);
     return ALLEG.alloc_pack_bitmap(
-      ALLEG.bitmaps.push(lallegts.load_pcx(filename_s, pal)) - 1
+      ALLEG.bitmaps.push(lallegts.load_pcx(filename_s, pal)) - 1,
     );
   },
   load_pcx_pf: function (f: string, pal: lallegts.RGB | undefined): null {
@@ -311,11 +311,11 @@ const AllegroJS = {
   },
   load_tga: function (
     filename: number,
-    pal: lallegts.RGB | undefined
+    pal: lallegts.RGB | undefined,
   ): lallegts.BITMAP {
     const filename_s = UTF8ToString(filename);
     return ALLEG.alloc_pack_bitmap(
-      ALLEG.bitmaps.push(lallegts.load_tga(filename_s, pal)) - 1
+      ALLEG.bitmaps.push(lallegts.load_tga(filename_s, pal)) - 1,
     );
   },
   load_tga_pf: function (f: string, pal: lallegts.RGB | undefined): null {
@@ -324,7 +324,7 @@ const AllegroJS = {
   save_bitmap: function (
     filename: number,
     bmp: number,
-    pal: lallegts.RGB | undefined
+    pal: lallegts.RGB | undefined,
   ): void {
     const filename_s = UTF8ToString(filename);
     lallegts.save_bitmap(filename_s, ALLEG.get_bitmap(bmp), pal);
@@ -332,7 +332,7 @@ const AllegroJS = {
   save_bmp: function (
     filename: number,
     bmp: number,
-    pal: lallegts.RGB | undefined
+    pal: lallegts.RGB | undefined,
   ): void {
     const filename_s = UTF8ToString(filename);
     lallegts.save_bmp(filename_s, ALLEG.get_bitmap(bmp), pal);
@@ -340,14 +340,14 @@ const AllegroJS = {
   save_bmp_pf: function (
     f: lallegts.PACKFILE,
     bmp: number,
-    pal: lallegts.RGB | undefined
+    pal: lallegts.RGB | undefined,
   ): void {
     lallegts.save_bmp_pf(f, ALLEG.get_bitmap(bmp), pal);
   },
   save_pcx: function (
     filename: number,
     bmp: number,
-    pal: lallegts.RGB | undefined
+    pal: lallegts.RGB | undefined,
   ): void {
     const filename_s = UTF8ToString(filename);
     lallegts.save_pcx(filename_s, ALLEG.get_bitmap(bmp), pal);
@@ -355,14 +355,14 @@ const AllegroJS = {
   save_pcx_pf: function (
     f: lallegts.PACKFILE,
     bmp: number,
-    pal: lallegts.RGB | undefined
+    pal: lallegts.RGB | undefined,
   ): void {
     lallegts.save_pcx_pf(f, ALLEG.get_bitmap(bmp), pal);
   },
   save_tga: function (
     filename: number,
     bmp: number,
-    pal: lallegts.RGB | undefined
+    pal: lallegts.RGB | undefined,
   ): void {
     const filename_s = UTF8ToString(filename);
     lallegts.save_tga(filename_s, ALLEG.get_bitmap(bmp), pal);
@@ -370,7 +370,7 @@ const AllegroJS = {
   save_tga_pf: function (
     f: lallegts.PACKFILE,
     bmp: number,
-    pal: lallegts.RGB | undefined
+    pal: lallegts.RGB | undefined,
   ): void {
     lallegts.save_tga_pf(f, ALLEG.get_bitmap(bmp), pal);
   },
@@ -378,9 +378,9 @@ const AllegroJS = {
     ext: number,
     load: (
       filename: string,
-      pal?: lallegts.RGB | undefined
+      pal?: lallegts.RGB | undefined,
     ) => lallegts.BITMAP | undefined,
-    save: (filename: string, pal?: lallegts.RGB | undefined) => number
+    save: (filename: string, pal?: lallegts.RGB | undefined) => number,
   ): void {
     const ext_s = UTF8ToString(ext);
     lallegts.register_bitmap_file_type(ext_s, load, save);
@@ -459,14 +459,14 @@ const AllegroJS = {
       UTF8ToString(a),
       UTF8ToString(b),
       UTF8ToString(c),
-      UTF8ToString(d)
+      UTF8ToString(d),
     );
   },
   MAKE_VERSION: function (a: number, b: number, c: number): number {
     return lallegts.MAKE_VERSION(
       UTF8ToString(a),
       UTF8ToString(b),
-      UTF8ToString(c)
+      UTF8ToString(c),
     );
   },
   os_type: function (): string {
@@ -584,7 +584,7 @@ const AllegroJS = {
     x: number,
     y: number,
     color: number,
-    bg: number
+    bg: number,
   ): void {
     const str = UTF8ToString(s);
     lallegts.textout_ex(
@@ -594,7 +594,7 @@ const AllegroJS = {
       x,
       y,
       color,
-      bg
+      bg,
     );
   },
   textout_centre_ex: function (
@@ -604,7 +604,7 @@ const AllegroJS = {
     x: number,
     y: number,
     color: number,
-    bg: number
+    bg: number,
   ): void {
     const str = UTF8ToString(s);
     lallegts.textout_centre_ex(
@@ -614,7 +614,7 @@ const AllegroJS = {
       x,
       y,
       color,
-      bg
+      bg,
     );
   },
   textout_right_ex: function (
@@ -624,7 +624,7 @@ const AllegroJS = {
     x: number,
     y: number,
     color: number,
-    bg: number
+    bg: number,
   ): void {
     const str = UTF8ToString(s);
     lallegts.textout_right_ex(
@@ -634,7 +634,7 @@ const AllegroJS = {
       x,
       y,
       color,
-      bg
+      bg,
     );
   },
   textout_justify_ex: function (
@@ -644,7 +644,7 @@ const AllegroJS = {
     x: number,
     y: number,
     color: number,
-    bg: number
+    bg: number,
   ): void {
     const str = UTF8ToString(s);
     lallegts.textout_justify_ex(
@@ -654,7 +654,7 @@ const AllegroJS = {
       x,
       y,
       color,
-      bg
+      bg,
     );
   },
   _textprintf_ex: function (
@@ -664,7 +664,7 @@ const AllegroJS = {
     y: number,
     color: number,
     bg: number,
-    s: number
+    s: number,
   ): void {
     const str = UTF8ToString(s);
     lallegts.textprintf_ex(
@@ -674,7 +674,7 @@ const AllegroJS = {
       y,
       color,
       bg,
-      str
+      str,
     );
   },
   _textprintf_centre_ex: function (
@@ -684,7 +684,7 @@ const AllegroJS = {
     y: number,
     color: number,
     bg: number,
-    s: number
+    s: number,
   ): void {
     const str = UTF8ToString(s);
     lallegts.textprintf_centre_ex(
@@ -694,7 +694,7 @@ const AllegroJS = {
       y,
       color,
       bg,
-      str
+      str,
     );
   },
   _textprintf_right_ex: function (
@@ -704,7 +704,7 @@ const AllegroJS = {
     y: number,
     color: number,
     bg: number,
-    s: number
+    s: number,
   ): void {
     const str = UTF8ToString(s);
     lallegts.textprintf_right_ex(
@@ -714,7 +714,7 @@ const AllegroJS = {
       y,
       color,
       bg,
-      str
+      str,
     );
   },
   _textprintf_justify_ex: function (
@@ -724,7 +724,7 @@ const AllegroJS = {
     y: number,
     color: number,
     bg: number,
-    s: number
+    s: number,
   ): void {
     const str = UTF8ToString(s);
     lallegts.textprintf_justify_ex(
@@ -734,7 +734,7 @@ const AllegroJS = {
       y,
       color,
       bg,
-      str
+      str,
     );
   },
 
@@ -759,7 +759,7 @@ const AllegroJS = {
     w: number,
     h: number,
     v_w: number | undefined,
-    v_h: number | undefined
+    v_h: number | undefined,
   ): number {
     const res = lallegts.set_gfx_mode(card, w, h, v_w, v_h);
     ALLEG.post_set_gfx_mode();
@@ -793,7 +793,7 @@ const AllegroJS = {
   keypressed: lallegts.keypressed,
   readkey: function (): number {
     return Asyncify.handleAsync(
-      async (): Promise<number> => lallegts.readkey()
+      async (): Promise<number> => lallegts.readkey(),
     );
   },
   ureadkey: lallegts.ureadkey,
@@ -913,7 +913,7 @@ const AllegroJS = {
     x: number,
     y1: number,
     y2: number,
-    color: number
+    color: number,
   ): void {
     lallegts.vline(ALLEG.get_bitmap(bitmap), x, y1, y2, color);
   },
@@ -922,7 +922,7 @@ const AllegroJS = {
     x1: number,
     y: number,
     x2: number,
-    color: number
+    color: number,
   ): void {
     lallegts.hline(ALLEG.get_bitmap(bitmap), x1, y, x2, color);
   },
@@ -932,7 +932,7 @@ const AllegroJS = {
     y1: number,
     x2: number,
     y2: number,
-    color: number
+    color: number,
   ): void {
     lallegts.line(ALLEG.get_bitmap(bitmap), x1, y1, x2, y2, color);
   },
@@ -942,7 +942,7 @@ const AllegroJS = {
     y1: number,
     x2: number,
     y2: number,
-    color: number
+    color: number,
   ): void {
     lallegts.fastline(ALLEG.get_bitmap(bitmap), x1, y1, x2, y2, color);
   },
@@ -954,7 +954,7 @@ const AllegroJS = {
     y2: number,
     x3: number,
     y3: number,
-    color: number
+    color: number,
   ): void {
     lallegts.triangle(ALLEG.get_bitmap(bitmap), x1, y1, x2, y2, x3, y3, color);
   },
@@ -962,7 +962,7 @@ const AllegroJS = {
     bitmap: number,
     vertices: number,
     points: number,
-    color: number
+    color: number,
   ): void {
     const points_arr = ALLEG.readArray32FromMemory(points, vertices * 2);
     lallegts.polygon(ALLEG.get_bitmap(bitmap), vertices, points_arr, color);
@@ -973,7 +973,7 @@ const AllegroJS = {
     y1: number,
     x2: number,
     y2: number,
-    color: number
+    color: number,
   ): void {
     lallegts.rect(ALLEG.get_bitmap(bitmap), x1, y1, x2, y2, color);
   },
@@ -983,7 +983,7 @@ const AllegroJS = {
     y1: number,
     x2: number,
     y2: number,
-    color: number
+    color: number,
   ): void {
     lallegts.rectfill(ALLEG.get_bitmap(bitmap), x1, y1, x2, y2, color);
   },
@@ -992,7 +992,7 @@ const AllegroJS = {
     x: number,
     y: number,
     radius: number,
-    color: number
+    color: number,
   ): void {
     lallegts.circle(ALLEG.get_bitmap(bitmap), x, y, radius, color);
   },
@@ -1001,7 +1001,7 @@ const AllegroJS = {
     x: number,
     y: number,
     radius: number,
-    color: number
+    color: number,
   ): void {
     lallegts.circlefill(ALLEG.get_bitmap(bitmap), x, y, radius, color);
   },
@@ -1011,7 +1011,7 @@ const AllegroJS = {
     y: number,
     rx: number,
     ry: number,
-    color: number
+    color: number,
   ): void {
     lallegts.ellipse(ALLEG.get_bitmap(bitmap), x, y, rx, ry, color);
   },
@@ -1021,7 +1021,7 @@ const AllegroJS = {
     y: number,
     rx: number,
     ry: number,
-    color: number
+    color: number,
   ): void {
     lallegts.ellipsefill(ALLEG.get_bitmap(bitmap), x, y, rx, ry, color);
   },
@@ -1032,7 +1032,7 @@ const AllegroJS = {
     ang1: number,
     ang2: number,
     radius: number,
-    color: number
+    color: number,
   ): void {
     lallegts.arc(ALLEG.get_bitmap(bitmap), x, y, ang1, ang2, radius, color);
   },
@@ -1067,7 +1067,7 @@ const AllegroJS = {
     vol: number | undefined,
     pan: number | undefined,
     freq: number | undefined,
-    loop: boolean | undefined
+    loop: boolean | undefined,
   ): void {
     lallegts.play_sample(ALLEG.samples[sample], vol, pan, freq, loop);
   },
@@ -1076,7 +1076,7 @@ const AllegroJS = {
     vol: number,
     pan: number,
     freq: number,
-    loop: boolean
+    loop: boolean,
   ): void {
     lallegts.adjust_sample(ALLEG.samples[sample], vol, pan, freq, loop);
   },
@@ -1089,13 +1089,13 @@ const AllegroJS = {
     bmp: number,
     sprite: number,
     x: number,
-    y: number
+    y: number,
   ): void {
     lallegts.draw_sprite_h_flip(
       ALLEG.get_bitmap(bmp),
       ALLEG.get_bitmap(sprite),
       x,
-      y
+      y,
     );
   },
   stretch_sprite: function (
@@ -1104,7 +1104,7 @@ const AllegroJS = {
     x: number,
     y: number,
     w: number,
-    h: number
+    h: number,
   ): void {
     lallegts.stretch_sprite(
       ALLEG.get_bitmap(bmp),
@@ -1112,14 +1112,14 @@ const AllegroJS = {
       x,
       y,
       w,
-      h
+      h,
     );
   },
   draw_sprite: function (
     bmp: number,
     sprite: number,
     x: number,
-    y: number
+    y: number,
   ): void {
     lallegts.draw_sprite(ALLEG.get_bitmap(bmp), ALLEG.get_bitmap(sprite), x, y);
   },
@@ -1128,14 +1128,14 @@ const AllegroJS = {
     sprite: number,
     x: number,
     y: number,
-    angle: number
+    angle: number,
   ): void {
     lallegts.rotate_sprite(
       ALLEG.get_bitmap(bmp),
       ALLEG.get_bitmap(sprite),
       x,
       y,
-      angle
+      angle,
     );
   },
   pivot_sprite: function (
@@ -1145,7 +1145,7 @@ const AllegroJS = {
     y: number,
     cx: number,
     cy: number,
-    angle: number
+    angle: number,
   ): void {
     lallegts.pivot_sprite(
       ALLEG.get_bitmap(bmp),
@@ -1154,7 +1154,7 @@ const AllegroJS = {
       y,
       cx,
       cy,
-      angle
+      angle,
     );
   },
   rotate_scaled_sprite: function (
@@ -1163,7 +1163,7 @@ const AllegroJS = {
     x: number,
     y: number,
     angle: number,
-    scale: number
+    scale: number,
   ): void {
     lallegts.rotate_scaled_sprite(
       ALLEG.get_bitmap(bmp),
@@ -1171,7 +1171,7 @@ const AllegroJS = {
       x,
       y,
       angle,
-      scale
+      scale,
     );
   },
   pivot_scaled_sprite: function (
@@ -1182,7 +1182,7 @@ const AllegroJS = {
     cx: number,
     cy: number,
     angle: number,
-    scale: number
+    scale: number,
   ): void {
     lallegts.pivot_scaled_sprite(
       ALLEG.get_bitmap(bmp),
@@ -1192,7 +1192,7 @@ const AllegroJS = {
       cx,
       cy,
       angle,
-      scale
+      scale,
     );
   },
   blit: function (
@@ -1203,7 +1203,7 @@ const AllegroJS = {
     dx: number,
     dy: number,
     w: number,
-    h: number
+    h: number,
   ): void {
     lallegts.blit(
       ALLEG.get_bitmap(source),
@@ -1213,7 +1213,7 @@ const AllegroJS = {
       dx,
       dy,
       w,
-      h
+      h,
     );
   },
   stretch_blit: function (
@@ -1226,7 +1226,7 @@ const AllegroJS = {
     dx: number,
     dy: number,
     dw: number,
-    dh: number
+    dh: number,
   ): void {
     lallegts.stretch_blit(
       ALLEG.get_bitmap(source),
@@ -1238,7 +1238,7 @@ const AllegroJS = {
       dx,
       dy,
       dw,
-      dh
+      dh,
     );
   },
 
