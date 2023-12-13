@@ -26,6 +26,7 @@
     "@typescript-eslint/no-unused-vars": 0,
     "@typescript-eslint/naming-convention": 0,
     "@typescript-eslint/prefer-readonly-parameter-types": 0,
-    "@typescript-eslint/no-magic-numbers": 0
+    "@typescript-eslint/no-magic-numbers": 0,
+    "@typescript-eslint/max-params": 0
   }
 }
