@@ -40,10 +40,6 @@ int main(void) {
   bmp = load_bitmap("assets/planet.png", NULL);
   buffer = create_bitmap(SCREEN_W, SCREEN_H);
 
-#ifdef __EMSCRIPTEN__
-  allegro_ready();
-#endif
-
   while (!key[KEY_ESC]) {
     clear_to_color(buffer, makecol(255, 255, 255));
 

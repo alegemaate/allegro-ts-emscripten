@@ -29,11 +29,6 @@ int main(void) {
   // Loads an image into the bitmap object
   logo = load_bitmap("assets/allegro.png", NULL);
 
-  // Wait for allegro to be ready
-#ifdef __EMSCRIPTEN__
-  allegro_ready();
-#endif
-
   // Loop
   while (!key[KEY_ESC]) {
     stretch_blit(logo, screen, 0, 0, logo->w, logo->h, 0, 0, SCREEN_W,

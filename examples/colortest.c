@@ -29,10 +29,7 @@ int main(void) {
   set_gfx_mode(GFX_AUTODETECT_WINDOWED, 640, 480, 0, 0);
   install_keyboard();
 
-  BITMAP* magic = load_bmp("assets/magicpink.bmp", NULL);
-#ifdef __EMSCRIPTEN__
-  allegro_ready();
-#endif
+  BITMAP* magic = load_bitmap("assets/magicpink.bmp", NULL);
 
   draw_sprite(screen, magic, SCREEN_W - 30, 10);
 

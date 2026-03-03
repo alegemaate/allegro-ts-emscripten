@@ -94,10 +94,6 @@ int main() {
     return 1;
   }
 
-#ifdef __EMSCRIPTEN__
-  allegro_ready();
-#endif
-
   set_palette(pal);
 
   /* initialise the images to random positions */

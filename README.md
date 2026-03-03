@@ -1,8 +1,8 @@
-# allegro.ts
+# allegro.ts emscripten bindings
 
-## Emscripten port of allegrots
+## Emscripten port of allegro-ts
 
-## [Github](https://github.com/alegemaate/allegro-ts-emscripten) - [API](https://alegemaate.com/allegro-ts/) - [Allegro TS](https://github.com/alegemaate/allegro-ts)
+## [Github](https://github.com/alegemaate/allegro-ts-emscripten) - [Docs](https://alegemaate.com/allegro-ts/) - [Allegro TS](https://github.com/alegemaate/allegro-ts)
 
 ### What is allegro.ts emscripten?
 
@@ -20,8 +20,8 @@ To build the examples run:
 
 ```sh
 cd examples
-emcmake cmake -G "<makefile type>" .
-make
+emcmake cmake --preset debug
+cmake --build --preset debug
 ```
 
 To run the examples, you will need to serve up the build directory with something like npm serve.

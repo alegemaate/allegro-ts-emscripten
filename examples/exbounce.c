@@ -102,11 +102,6 @@ int main(void) {
   // load the bounce sound
   bounce = load_sample("assets/piano.wav");
 
-  // make sure everything has loaded
-#ifdef __EMSCRIPTEN__
-  allegro_ready();
-#endif
-
   // repeat this game loop
   while (!key[KEY_ESC]) {
     // clear screen

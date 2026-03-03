@@ -36,11 +36,12 @@ typedef int SAMPLE;
 
 typedef int FONT;
 
+typedef int MIDI;
+
 typedef void (*procedure)(void);
 
 /* Allegro TS Specific */
 extern void init_allegro_ts(const char* canvas_id);
-extern void allegro_ready(void);
 extern void enable_debug(const char* id);
 
 // 1.1.1
@@ -628,7 +629,7 @@ void textprintf_justify_ex(BITMAP* bmp,
 }
 
 // 1.25.5
-extern void install_sound(int digi, int midi, const char* cfg_path);
+extern int install_sound(int digi, int midi, const char* cfg_path);
 
 #define DIGI_AUTODETECT -1
 #define DIGI_NONE 0
@@ -665,6 +666,29 @@ extern void adjust_sample(SAMPLE* spl,
 
 // 1.27.13
 extern void stop_sample(SAMPLE* sample);
+
+extern MIDI* load_midi(char* filename);
+extern void destroy_midi(MIDI* midi);
+extern void lock_midi(MIDI* midi);
+extern void play_midi(MIDI* midi, int loop);
+extern void play_looped_midi(MIDI* midi);
+extern void stop_midi(MIDI* midi);
+extern void midi_pause();
+extern void midi_resume();
+extern void midi_seek(int position);
+extern int get_midi_length(MIDI* midi);
+extern void midi_out(MIDI* midi);
+extern void load_midi_patches(MIDI* midi);
+extern void midi_msg_callback(MIDI* midi);
+extern void load_ibk(MIDI* midi);
+extern int text_length(FONT* fnt, const char* text);
+extern int text_height(FONT* fnt);
+
+extern int midi_pos(void);
+#define midi_pos midi_pos()
+
+extern int midi_time(void);
+#define midi_time midi_time()
 
 // Load png compaitibility
 extern int loadpng_init();
