@@ -19,30 +19,24 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           submodules: true
 
-      - uses: actions/configure-pages@v4
+      - uses: actions/configure-pages@v5
 
       - uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: yarn
 
+      - uses: mymindstorm/setup-emsdk@v14
+      
       - run: sudo ./setup.sh
 
-      - uses: mymindstorm/setup-emsdk@v7
-
-      - name: Build examples
-        run: |
-          cd examples
-          emcmake cmake .
-          sudo make -j4
-
-      - uses: actions/upload-pages-artifact@v2
+      - uses: actions/upload-pages-artifact@v4
         with:
           path: ./build
 
-      - uses: actions/deploy-pages@v3
+      - uses: actions/deploy-pages@v4
         id: deployment
